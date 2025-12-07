@@ -1,9 +1,20 @@
 #include "parser.h"
+
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
+/**
+ * alloc_cmd
+ *
+ * Allocate and initialize a new command_t structure.
+ *
+ * Returns:
+ *   A pointer to a zero-initialized command_t on success.
+ *   The caller owns the returned pointer and must free it and its nested
+ *   allocations using free_command().
+ */
 static command_t *alloc_cmd()
 {
   command_t *cmd = calloc(1, sizeof(command_t));
@@ -11,6 +22,20 @@ static command_t *alloc_cmd()
   return cmd;
 }
 
+/**
+ * copy_token
+ *
+ * Create a null-terminated heap-allocated copy of a substring.
+ *
+ * Parameters:
+ *   start - pointer to the first character of the token substring.
+ *   len   - length of the substring to copy (number of bytes).
+ *
+ * Returns:
+ *   A newly allocated char* containing the copied characters followed by a
+ *   terminating '\0'. The caller is responsible for freeing the returned
+ *   string with free().
+ */
 static char *copy_token(const char *start, int len)
 {
   char *t = malloc(len + 1);
@@ -19,6 +44,18 @@ static char *copy_token(const char *start, int len)
   return t;
 }
 
+/**
+ * free_tokens
+ *
+ * Free a NULL terminated array of strings previously returned by tokenize().
+ *
+ * Parameters:
+ *   tokens - NULL terminated array of heap-allocated char* pointers.
+ *
+ * Behavior:
+ *   - Frees each non-NULL string tokens[i] and then frees the array itself.
+ *   - Safe to call with tokens == NULL (no-op).
+ */
 static void free_tokens(char **tokens)
 {
   for (int i = 0; tokens[i]; i++)
@@ -28,6 +65,19 @@ static void free_tokens(char **tokens)
   free(tokens);
 }
 
+/**
+ * parse_tokens
+ *
+ * Convert a NULL-terminated array of tokens into a linked command_t structure.
+ *
+ * Parameters:
+ *   tokens - NULL-terminated array of token strings.
+ *
+ * Returns:
+ *   A pointer to the head of a command_t structure representing the parsed
+ *   command pipeline. Memory for command nodes and duplicated strings is
+ *   allocated by parse_tokens and must be freed using free_command().
+ */
 static command_t *parse_tokens(char **tokens)
 {
   command_t *cmd = alloc_cmd();
@@ -39,7 +89,7 @@ static command_t *parse_tokens(char **tokens)
   {
     char *t = tokens[i];
 
-    if (tokens[i] == NULL)
+    if (t == NULL)
     {
       break;
     }
@@ -71,6 +121,19 @@ static command_t *parse_tokens(char **tokens)
   return cmd;
 }
 
+/**
+ * set_exec
+ *
+ * Mark whether a command should be executed via exec (external) or is a
+ * builtin that should be handled internally.
+ *
+ * Parameters:
+ *   cmd - pointer to a command_t whose argv[0] names the command.
+ *
+ * Behavior:
+ *   - Sets cmd->is_exec to 0 for builtins "cd" and "exit", otherwise sets
+ *     cmd->is_exec to 1.
+ */
 static void set_exec(command_t *cmd)
 {
   if (strcmp(cmd->argv[0], "cd") == 0 || strcmp(cmd->argv[0], "exit") == 0)
@@ -79,6 +142,20 @@ static void set_exec(command_t *cmd)
     cmd->is_exec = 1;
 }
 
+/**
+ * tokenize
+ *
+ * Split an input string into a NULL-terminated array of tokens suitable for
+ * parse_tokens().
+ *
+ * Parameters:
+ *   input - NULL terminated input command line string.
+ *
+ * Returns:
+ *   A freshly allocated NULL-terminated array of heap-allocated strings.
+ *   Each token is heap-allocated and the array itself is heap-allocated.
+ *   The caller must free the result with free_tokens().
+ */
 static char **tokenize(const char *input)
 {
   char **tokens = calloc(MAX_TOKENS, sizeof(char *));
@@ -104,7 +181,9 @@ static char **tokenize(const char *input)
     {
       int start = ++i;
       while (i < n && input[i] != '"')
+      {
         i++;
+      }
       tokens[t++] = copy_token(input + start, i - start);
       i++;
       continue;
@@ -127,6 +206,19 @@ static char **tokenize(const char *input)
   return tokens;
 }
 
+/**
+ * free_command
+ *
+ * Recursively free a command_t structure and all resources it owns.
+ *
+ * Parameters:
+ *   cmd - pointer to the command_t to free (may be NULL).
+ *
+ * Behavior:
+ *   - Frees argv strings, the argv array, input_redirect, output_redirect.
+ *   - Recursively frees cmd->pipe_to (if non-NULL).
+ *   - Finally frees the command_t itself.
+ */
 void free_command(command_t *cmd)
 {
   if (!cmd)
@@ -145,6 +237,19 @@ void free_command(command_t *cmd)
   free(cmd);
 }
 
+/**
+ * parse_command
+ *
+ * High-level helper: tokenize an input string and parse it into a
+ * command_t pipeline structure.
+ *
+ * Parameters:
+ *   input - NULL terminated input command line string.
+ *
+ * Returns:
+ *   A pointer to the parsed command_t structure (head of pipeline). The
+ *   caller owns the returned pointer and must free it with free_command().
+ */
 command_t *parse_command(const char *input)
 {
   char **tokens = tokenize(input);
