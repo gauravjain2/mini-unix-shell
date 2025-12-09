@@ -138,7 +138,7 @@ static command_t *parse_tokens(char **tokens)
  */
 static void set_exec(command_t *cmd)
 {
-  if (strcmp(cmd->argv[0], "cd") == 0 || strcmp(cmd->argv[0], "exit") == 0)
+  if (strcmp(cmd->argv[0], "cd") == 0 || strcmp(cmd->argv[0], "exit") == 0 || strcmp(cmd->argv[0], "history") == 0)
     cmd->is_exec = 0;
   else
     cmd->is_exec = 1;
@@ -170,7 +170,8 @@ static char **tokenize(const char *input)
     while (isspace(input[i]))
       i++;
 
-    if (i == n) break;
+    if (i == n)
+      break;
 
     // special operators
     if (input[i] == '&' || input[i] == '|' || input[i] == '<' || input[i] == '>')
