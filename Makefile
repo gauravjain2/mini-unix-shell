@@ -4,11 +4,15 @@ CFLAGS = -Wall -g
 
 # Source directory
 SRC = src
+TESTS = tests
 
-# Object files
+# Object files (excluding main.o for tests)
 OBJS = $(SRC)/main.o $(SRC)/builtins.o $(SRC)/parser.o $(SRC)/utility.o $(SRC)/executor.o
+TEST_OBJS = $(SRC)/builtins.o $(SRC)/parser.o $(SRC)/utility.o $(SRC)/executor.o $(TESTS)/test_suite.o
 
 # Output binary
+.PHONY: shell test clean
+
 shell: $(OBJS)
 	$(CC) $(CFLAGS) -o shell $(OBJS)
 
@@ -28,5 +32,13 @@ $(SRC)/utility.o: $(SRC)/utility.c $(SRC)/utility.h
 $(SRC)/executor.o: $(SRC)/executor.c $(SRC)/executor.h
 	$(CC) $(CFLAGS) -c $(SRC)/executor.c -o $(SRC)/executor.o
 
+$(TESTS)/test_suite.o: $(TESTS)/test_suite.c $(TESTS)/test.h
+	$(CC) $(CFLAGS) -I. -c $(TESTS)/test_suite.c -o $(TESTS)/test_suite.o
+
+# Test target
+test: $(TEST_OBJS)
+	$(CC) $(CFLAGS) -o test_runner $(TEST_OBJS)
+	./test_runner
+
 clean:
-	rm -f $(SRC)/*.o shell
+	rm -f $(SRC)/*.o $(TESTS)/*.o shell test_runner
