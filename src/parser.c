@@ -259,10 +259,11 @@ command_t *parse_command(const char *input)
   char **tokens = tokenize(input);
   command_t *cmd = parse_tokens(tokens);
 
-  set_exec(cmd);
-  if (cmd->pipe_to)
+  command_t *cur = cmd;
+  while (cur)
   {
-    set_exec(cmd->pipe_to);
+    set_exec(cur);
+    cur = cur->pipe_to;
   }
 
   free_tokens(tokens);
