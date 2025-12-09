@@ -4,10 +4,13 @@
 #include <signal.h>
 #include <unistd.h>
 #include <limits.h>
+#include <sys/wait.h>
 
 #include "parser.h"
 #include "builtins.h"
 #include "utility.h"
+#include "executor.h"
+
 
 /**
  * sigchld_handler - Signal handler for SIGCHLD
@@ -63,7 +66,10 @@ int main()
 
     if (cmd->is_exec)
     {
-      // Execute external command
+      int status = execute_command(cmd);
+      if (status==0){
+        printf("Error ocurred while executing the command\n");
+      }
     }
     else
     {
