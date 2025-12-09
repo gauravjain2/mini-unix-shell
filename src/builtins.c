@@ -40,5 +40,20 @@ int run_builtin(command_t *cmd)
     return 1;
   }
 
+  // history
+  if (strcmp(cmd->argv[0], "history") == 0)
+  {
+    char *cmds = get_cmd_history();
+    if (cmd->input_redirect)
+    {
+      FILE *fptr = fopen("sample.txt", "w");
+      fprintf(fptr, "%s", cmds);
+    }
+    else
+    {
+      fprintf(stdout, "%s", cmds);
+    }
+  }
+
   return 0;
 }

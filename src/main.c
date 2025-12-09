@@ -11,7 +11,6 @@
 #include "utility.h"
 #include "executor.h"
 
-
 /**
  * sigchld_handler - Signal handler for SIGCHLD
  * @sig: Signal number (unused)
@@ -67,8 +66,9 @@ int main()
     if (cmd->is_exec)
     {
       int status = execute_command(cmd);
-      if (status==0){
-        printf("Error ocurred while executing the command\n");
+      if (status == 0)
+      {
+        printf("Error occurred while executing the command\n");
       }
     }
     else
@@ -77,6 +77,7 @@ int main()
     }
 
     free_command(cmd);
+    add_cmd_history(line);
   }
 
   return 0;

@@ -1,6 +1,7 @@
 #include "utility.h"
 
 #include <libgen.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,6 +10,7 @@
 static char cwd[256] = "";
 static char home[PATH_MAX] = "";
 static char pwd[PATH_MAX] = "";
+static char history_path[PATH_MAX] = "";
 
 /**
  * get_cwd
@@ -90,4 +92,109 @@ void set_pwd()
 
   strncpy(cwd, basename(pwd), sizeof(cwd) - 1);
   cwd[sizeof(cwd) - 1] = '\0';
+}
+
+/**
+ * @brief Adds a command to the command history.
+ *
+ * @param cmd A pointer to a null-terminated string containing the command to add.
+ *
+ * @return void
+ */
+void add_cmd_history(const char *cmd)
+{
+  if (history_path[0] == '\0')
+  {
+    const char *home = get_home();
+    snprintf(history_path, sizeof(history_path), "%s/.shell_history", home);
+  }
+
+  FILE *history_file = fopen(history_path, "a");
+  if (history_file)
+  {
+    fprintf(history_file, "%s", cmd);
+    fclose(history_file);
+  }
+}
+
+char *get_cmd_history()
+{
+  if (history_path[0] == '\0')
+  {
+    const char *home = get_home();
+    snprintf(history_path, sizeof(history_path), "%s/.shell_history", home);
+  }
+  FILE *fptr = fopen(history_path, "r");
+  if (!fptr)
+  {
+    return NULL;
+  }
+
+  char *lines[10] = {NULL};
+  int line_count = 0;
+  int current_idx = 0;
+  char *line_buf = NULL;
+  size_t line_len = 0;
+  ssize_t read_bytes;
+
+  while ((read_bytes = getline(&line_buf, &line_len, fptr)) != -1)
+  {
+    if (lines[current_idx] != NULL)
+    {
+      free(lines[current_idx]);
+    }
+    lines[current_idx] = strdup(line_buf);
+    if (lines[current_idx] == NULL)
+    {
+      // Handle allocation error
+      for (int i = 0; i < 10; ++i)
+      {
+        if (lines[i] != NULL)
+        {
+          free(lines[i]);
+        }
+      }
+      free(line_buf);
+      fclose(fptr);
+      return NULL;
+    }
+    current_idx = (current_idx + 1) % 10;
+    if (line_count < 10)
+    {
+      line_count++;
+    }
+  }
+
+  free(line_buf);
+  fclose(fptr);
+
+  // Calculate total length for the result string
+  size_t total_length = 0;
+  int start_idx = (line_count < 10) ? 0 : current_idx;
+  for (int i = 0; i < line_count; ++i)
+  {
+    total_length += strlen(lines[(start_idx + i) % 10]);
+  }
+
+  char *result = malloc(total_length + 1); // +1 for null terminator
+  if (result == NULL)
+  {
+    for (int i = 0; i < 10; ++i)
+    {
+      if (lines[i] != NULL)
+      {
+        free(lines[i]);
+      }
+    }
+    return NULL;
+  }
+  result[0] = '\0'; // Initialize as empty string
+
+  for (int i = 0; i < line_count; ++i)
+  {
+    strcat(result, lines[(start_idx + i) % 10]);
+    free(lines[(start_idx + i) % 10]); // Free memory after copying
+  }
+
+  return result;
 }
