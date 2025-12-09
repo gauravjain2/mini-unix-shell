@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 static char cwd[256] = "";
 static char home[PATH_MAX] = "";

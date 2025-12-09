@@ -108,6 +108,7 @@ static command_t *parse_tokens(char **tokens)
     }
     else if (strcmp(t, "|") == 0)
     {
+      cur->argv[argc] = NULL;
       cur->pipe_to = alloc_cmd();
       cur = cur->pipe_to;
       argc = 0;
@@ -117,6 +118,7 @@ static command_t *parse_tokens(char **tokens)
       cur->argv[argc++] = strdup(t);
     }
   }
+  cur->argv[argc] = NULL;
 
   return cmd;
 }
@@ -167,6 +169,8 @@ static char **tokenize(const char *input)
   {
     while (isspace(input[i]))
       i++;
+
+    if (i == n) break;
 
     // special operators
     if (input[i] == '&' || input[i] == '|' || input[i] == '<' || input[i] == '>')
