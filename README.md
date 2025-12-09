@@ -18,20 +18,63 @@ The **Mini UNIX Shell** is a custom command-line interface (CLI) designed to pro
 
 ## 2. Installation and Setup
 
-### Prerequisites
-Before installing, ensure your system has the following tools available:
-* **GCC** (GNU Compiler Collection)
-* **Make** (GNU Build Tool)
+### Linux
 
-### Compilation Steps
-1.  **Download the Source Code**: Ensure all source files (`src/*.c`, `src/*.h`, `Makefile`) are in your working directory.
-2.  **Open Terminal**: Navigate to the directory containing the `Makefile`.
-3.  **Build the Shell**: Run the following command:
+1.  **Install dependencies** (Ubuntu/Debian example):
+    ```bash
+    sudo apt update
+    sudo apt install build-essential
+    ```
+2.  **Build**:
     ```bash
     make
     ```
-    This command compiles the source code and generates an executable named `shell`.
-4.  **Clean Build (Optional)**: To remove compiled object files and the executable, run:
+3.  **Run**:
+    ```bash
+    ./shell
+    ```
+
+### macOS
+
+1.  **Install Command Line Tools** (if not already installed):
+    ```bash
+    xcode-select --install
+    ```
+2.  **Build**:
+    ```bash
+    make
+    ```
+3.  **Run**:
+    ```bash
+    ./shell
+    ```
+
+### Windows
+
+**Note**: This shell relies on POSIX system calls (like `fork()`, `pipe()`, `execvp()`) which are not natively available in the Windows kernel. You **must** use the Windows Subsystem for Linux (WSL).
+
+1.  **Install WSL**:
+    Open PowerShell as Administrator and run:
+    ```powershell
+    wsl --install
+    ```
+    Restart your computer if prompted.
+2.  **Open WSL Terminal**:
+    Launch "Ubuntu" (or your installed distribution) from the Start menu.
+3.  **Install dependencies**:
+    ```bash
+    sudo apt update
+    sudo apt install build-essential
+    ```
+4.  **Build and Run**:
+    Navigate to the project directory and run:
+    ```bash
+    make
+    ./shell
+    ```
+
+
+**Clean Build (Optional)**: To remove compiled object files and the executable, run:
     ```bash
     make clean
     ```
