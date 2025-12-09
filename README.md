@@ -157,3 +157,11 @@ Note: The shell will print a confirmation (e.g., [bg] started PID 1234).
 | **`cd: No such file...`** | Invalid directory path. | Check the path spelling using `ls`. |
 | **Shell ignores `Ctrl+C`** | Design choice. | The shell is designed to ignore SIGINT. Use `exit` to quit. |
 | **Pipeline errors** | Syntax error. | Ensure spaces exist between commands and the `pipe` symbol. |
+
+## 6. Demo Screenshots
+
+![Demo](./images/demo_2.jpeg)
+
+![Demo](./images/demo_1.jpeg)
+
+![Demo](./images/demo_3.jpeg)
